@@ -1,3 +1,30 @@
+
+Skip to content
+
+    Pull requests
+    Issues
+    Marketplace
+    Explore
+
+    @rathovarun
+
+11
+8
+
+    11
+
+Percona-Lab/codeceptjs-resemblehelper
+Code
+Issues 7
+Pull requests 4
+Projects 0
+Wiki
+Insights
+codeceptjs-resemblehelper/index.js
+@puneet0191 puneet0191 Compatibility with Webdriver @5 08b9c84 on Feb 12
+@puneet0191
+@mathesouza
+240 lines (213 sloc) 7.94 KB
 'use strict';
 
 // use any assertion library you like
@@ -188,8 +215,29 @@ class ResembleHelper extends Helper {
      * @param selector CSS|XPath|ID selector
      * @returns {Promise<{boundingBox: {left: *, top: *, right: *, bottom: *}}>}
      */
-    async _getBoundingBox(selector){
+    async _getBoundingBox(selector)
+{
         const browser = this._getBrowser();
+        if(this.helpers['Puppeteer']){
+         const page= await browser.defaultBrowserContext();
+         const ele= await page.$(selector);
+         var location = await ele.getLocation();
+         var size = await ele.getSize();
+        }
+        else  {
+           try {
+               await page.waitForSelector(selector);
+               var location = await page.getLocation(selector);
+            var size = await page.getElementSize(selector);
+              }
+         catch (error) 
+         {
+           console.log("The element didn't appear.");
+           return null;
+          }
+            }
+         
+
 
         if (this.helpers['WebDriver']) {
             const ele = await browser.$(selector);
@@ -232,8 +280,16 @@ class ResembleHelper extends Helper {
         if (this.helpers['WebDriverIO']) {
             return this.helpers['WebDriverIO'].browser;
         }
+        if (this.helpers['Puppeteer']) {
+            return this.helpers['Puppeteer'].browser;
+        }
+        
+
         throw new Error('No matching helper found. Supported helpers: WebDriver/Appium/WebDriverIO');
     }
 }
 
 module.exports = ResembleHelper;
+
+
+
